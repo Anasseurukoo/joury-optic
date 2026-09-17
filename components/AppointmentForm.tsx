@@ -6,10 +6,6 @@ import { business } from "../lib/config";
 
 type Errors = Partial<Record<"name" | "phone" | "date" | "time", string>>;
 
-function isFriday(date: string) {
-  return Boolean(date) && new Date(`${date}T12:00:00`).getDay() === 5;
-}
-
 export default function AppointmentForm({ frameReference = "" }: { frameReference?: string }) {
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState("");
@@ -25,13 +21,6 @@ export default function AppointmentForm({ frameReference = "" }: { frameReferenc
   function handleDateChange(event: ChangeEvent<HTMLInputElement>) {
     const value = event.target.value;
     setStatus("");
-
-    if (isFriday(value)) {
-      setSelectedDate("");
-      setErrors((current) => ({ ...current, date: "La boutique est fermée le vendredi. Choisissez un autre jour." }));
-      return;
-    }
-
     setSelectedDate(value);
     setErrors((current) => {
       if (!current.date) return current;
@@ -41,7 +30,7 @@ export default function AppointmentForm({ frameReference = "" }: { frameReferenc
     });
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
@@ -55,7 +44,6 @@ export default function AppointmentForm({ frameReference = "" }: { frameReferenc
     if (phone.replace(/\D/g, "").length < 8) nextErrors.phone = "Indiquez un numéro de téléphone valide.";
     if (!date) nextErrors.date = "Choisissez une date.";
     if (date && date < today) nextErrors.date = "Choisissez une date à venir.";
-    if (isFriday(date)) nextErrors.date = "La boutique est fermée le vendredi. Choisissez un autre jour.";
     if (!time) nextErrors.time = "Choisissez une heure.";
 
     setErrors(nextErrors);
@@ -81,9 +69,14 @@ export default function AppointmentForm({ frameReference = "" }: { frameReferenc
       "Je comprends que le créneau reste à confirmer par Joury Optic.",
     ].filter(Boolean).join("\n");
 
-    const whatsappUrl = `https://wa.me/${business.whatsappNumber}?text=${encodeURIComponent(body)}`;
-    setStatus("Votre demande est prête. WhatsApp va s’ouvrir et Joury confirmera ensuite le créneau.");
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    try {
+      await navigator.clipboard.writeText(body);
+    } catch {
+      // Clipboard can be unavailable in some browsers; WhatsApp still opens.
+    }
+
+    setStatus("WhatsApp va s’ouvrir. Le message de demande est copié pour être envoyé.");
+    window.open(business.whatsappUrl, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -111,7 +104,7 @@ export default function AppointmentForm({ frameReference = "" }: { frameReferenc
           aria-invalid={Boolean(errors.date)}
           aria-describedby={errors.date ? "date-error" : "date-hint"}
         />
-        <span id="date-hint" className="field-hint">Boutique fermée le vendredi — choisissez un autre jour.</span>
+        <span id="date-hint" className="field-hint">Ouvert toute la semaine — choisissez le jour qui vous convient.</span>
         {errors.date && <span id="date-error" className="field-error">{errors.date}</span>}
       </div>
       <div className="form-field">
@@ -127,11 +120,11 @@ export default function AppointmentForm({ frameReference = "" }: { frameReferenc
         <textarea id="appointment-message" name="message" rows={4} defaultValue={frameReference ? `Je souhaite découvrir la monture ${frameReference}.` : ""} />
       </div>
       <button className="button button-gold form-submit" type="submit">
-        Envoyer la demande sur WhatsApp <MessageCircle size={17} />
+        Ouvrir WhatsApp <MessageCircle size={17} />
       </button>
       <div className="form-alternatives" aria-label="Autres moyens de contact">
         <a href={`tel:${business.phoneHref}`}><Phone size={15} /> Appeler</a>
-        <a href={`mailto:${business.email}`}><Mail size={15} /> E-mail</a>
+        {business.email && <a href={`mailto:${business.email}`}><Mail size={15} /> E-mail</a>}
       </div>
       <p className="form-note">La demande n’est pas une confirmation : Joury vous contacte pour valider le créneau.</p>
       {status && <p className="form-status" aria-live="polite"><CheckCircle2 size={18} /> {status}</p>}
