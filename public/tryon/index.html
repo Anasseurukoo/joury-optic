@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Essayage virtuel · Joury Optic</title>
+<style>
+  :root{
+    --petrol-950:#041718; --petrol-900:#071f20; --petrol-800:#0c3031;
+    --ivory:#f4efe7; --paper:#fbf8f2; --gold:#c49a58; --gold-light:#e0c28c;
+    --ink:#102526; --muted:#667575; --line:rgba(16,37,38,.14); --wline:rgba(255,255,255,.16);
+    --serif:"Bodoni 72",Didot,"Times New Roman",Georgia,serif;
+    --sans:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--ivory);color:var(--ink);font:400 16px/1.6 var(--sans);display:flex;flex-direction:column;overflow:hidden}
+  em{color:var(--gold);font-style:italic}
+
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 22px;background:var(--petrol-950);color:var(--ivory);border-bottom:1px solid var(--wline)}
+  .brand{font:750 11px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase}
+  .brand em{color:var(--gold-light);font-style:normal;font-weight:400;letter-spacing:.14em;margin-left:10px;text-transform:none}
+  .status{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:650;letter-spacing:.055em;color:rgba(255,255,255,.6)}
+  .status i{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 5px rgba(196,154,88,.12)}
+  .status i.live{background:#69c39a;box-shadow:0 0 0 5px rgba(105,195,154,.14)}
+
+  #stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:var(--petrol-950)}
+  #frame{position:relative;transform:scaleX(-1)}
+  #cam,#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #cam{object-fit:cover}
+  #gl{pointer-events:none}
+
+  #gate{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;text-align:center;padding:28px;background:var(--petrol-950);color:var(--ivory)}
+  #gate h1{margin:0;font:400 clamp(26px,4vw,40px)/1.15 var(--serif);letter-spacing:-.01em}
+  #gate p{margin:0;max-width:34ch;color:rgba(255,255,255,.72);font-size:14px}
+  #gate ul{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  #gate li{font-size:11px;font-weight:650;letter-spacing:.06em;color:rgba(255,255,255,.6);
+    border:1px solid var(--wline);border-radius:999px;padding:7px 13px}
+
+  #plate{position:absolute;left:16px;bottom:16px;z-index:5;background:rgba(4,23,24,.72);backdrop-filter:blur(8px);
+    border:1px solid var(--wline);border-radius:3px;padding:11px 15px;color:var(--ivory);max-width:min(340px,60vw)}
+  #plate strong{display:block;font:400 17px/1.2 var(--serif)}
+  #plate span{display:block;margin-top:4px;font-size:10.5px;font-weight:600;letter-spacing:.09em;
+    text-transform:uppercase;color:rgba(255,255,255,.58)}
+  #plate b{color:var(--gold-light);font-weight:600}
+
+  .rail{display:flex;gap:9px;overflow-x:auto;padding:16px 22px;background:var(--paper);
+    border-top:1px solid var(--line);scrollbar-width:none}
+  .rail::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;text-align:left;line-height:1.35;cursor:pointer;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:2px;padding:9px 15px;font-size:13px;white-space:nowrap;
+    transition:border-color .2s,color .2s}
+  .chip small{display:block;font-size:10px;font-weight:650;letter-spacing:.09em;color:var(--muted)}
+  .chip[aria-pressed="true"]{border-color:var(--gold);color:#8a6a2e;box-shadow:inset 0 0 0 1px var(--gold)}
+  .chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+  .bar{display:flex;gap:10px;padding:0 22px 18px;background:var(--paper)}
+  .btn{flex:1;padding:14px 18px;border-radius:2px;cursor:pointer;font-size:12px;font-weight:700;
+    letter-spacing:.11em;text-transform:uppercase;border:1px solid var(--ink);background:transparent;color:var(--ink)}
+  .btn.gold{background:var(--gold);border-color:var(--gold);color:var(--petrol-950)}
+  .btn.ghost{border-color:var(--line);color:var(--muted)}
+  .btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .btn[disabled]{opacity:.45;cursor:default}
+
+  #tune{display:none;padding:4px 22px 20px;background:var(--paper);border-top:1px solid var(--line)}
+  #tune.open{display:block}
+  .row{display:flex;align-items:center;gap:14px;margin:9px 0}
+  .row label{flex:0 0 108px;font-size:11px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  .row input[type=range]{flex:1;accent-color:var(--gold)}
+  .row output{flex:0 0 46px;text-align:right;font:600 12px ui-monospace,monospace}
+  .tog{display:inline-flex;align-items:center;gap:8px;margin:8px 16px 0 0;font-size:12px;color:var(--muted)}
+  .note{margin:12px 0 0;font-size:12px;line-height:1.65;color:var(--muted);max-width:70ch}
+  #dump{width:100%;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:2px;background:#fff;
+    color:var(--muted);font:11px/1.6 ui-monospace,monospace;min-height:66px;resize:vertical}
+  @media (max-width:640px){
+    header{padding:12px 16px} .rail,.bar,#tune{padding-left:16px;padding-right:16px}
+    .bar{flex-wrap:wrap} .btn{flex:1 1 42%}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">Joury Optic <em>Essayage virtuel</em></span>
+  <span class="status"><i id="dot"></i><span id="statusText">Caméra en attente</span></span>
+</header>
+
+<div id="stage">
+  <div id="frame"><video id="cam" playsinline muted autoplay></video><canvas id="gl"></canvas></div>
+  <div id="plate"><strong id="pName">—</strong><span id="pMeta"></span></div>
+  <div id="gate">
+    <h1>Votre prochain regard,<br><em>avant même la visite.</em></h1>
+    <p>L'aperçu est calculé sur votre appareil. Aucune image n'est enregistrée ni envoyée à Joury Optic.</p>
+    <ul><li>Accord explicite</li><li>Aucun envoi d'image</li><li>Arrêt à tout moment</li></ul>
+    <button class="btn gold" id="start" style="flex:0 0 auto;min-width:230px">Autoriser la caméra</button>
+  </div>
+</div>
+
+<div class="rail" id="rail"></div>
+
+<div class="bar">
+  <button class="btn gold" id="shot" disabled>Photo</button>
+  <button class="btn" id="closeBtn">Fermer</button>
+  <button class="btn ghost" id="tuneBtn" aria-expanded="false" hidden>Réglages</button>
+</div>
+
+<div id="tune">
+  <div class="row"><label for="s-y">Hauteur</label><input id="s-y" type="range" min="-1.5" max="1.5" step="0.02" value="0"><output id="o-y">0.00</output></div>
+  <div class="row"><label for="s-z">Profondeur</label><input id="s-z" type="range" min="-1.5" max="1.5" step="0.02" value="0"><output id="o-z">0.00</output></div>
+  <div class="row"><label for="s-scale">Échelle</label><input id="s-scale" type="range" min="0.8" max="1.25" step="0.005" value="1"><output id="o-scale">1.000</output></div>
+  <div class="row"><label for="s-pitch">Galbe</label><input id="s-pitch" type="range" min="-20" max="20" step="0.5" value="-8"><output id="o-pitch">-8</output></div>
+  <div class="row"><label for="s-smooth">Stabilité</label><input id="s-smooth" type="range" min="0" max="0.95" step="0.01" value="0.6"><output id="o-smooth">0.60</output></div>
+  <label class="tog"><input type="checkbox" id="c-occl" checked> Occlusion derrière la tête</label>
+  <label class="tog"><input type="checkbox" id="c-debug"> Repères de calage</label>
+  <p class="note">Panneau interne. L'ancrage se calcule automatiquement sur les yeux et l'arête du nez pendant les
+  premières secondes : tournez lentement la tête à gauche puis à droite. Les curseurs servent à figer un réglage
+  par référence, à reporter ensuite dans le catalogue. L'écart pupillaire affiché est une estimation optique et ne
+  remplace pas la mesure en boutique.</p>
+  <textarea id="dump" readonly spellcheck="false"></textarea>
+  <div class="bar" style="padding:12px 0 0;background:transparent">
+    <button class="btn ghost" id="copy">Copier le calibrage</button>
+    <button class="btn ghost" id="reset">Recalculer l'ancrage</button>
+  </div>
+</div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+/* =========================================================================
+   CATALOGUE — aligné sur website/lib/products.ts
+   lensW / bridge / temple : fiches produit Joury Optic.
+   lensH : fiches techniques Persol et revendeurs agréés (à confirmer au
+   pied à coulisse lors du scan de chaque monture).
+   ========================================================================= */
+const CATALOG = [
+  { sku:"PO2496SZ", slug:"alpine-signature", name:"Alpine Signature",
+    lensW:52, bridge:18, temple:140, lensH:47, shape:"round",
+    front:"metal", metal:0xc7a24e, rimT:1.6, depth:1.6, doubleBridge:true, pads:true,
+    lens:{color:0x24503a, opacity:0.82}, tipColor:0x5a3620 },
+
+  { sku:"PO3264S", slug:"noir-or", name:"Noir & Or",
+    lensW:50, bridge:22, temple:140, lensH:46, shape:"round",
+    front:"acetate", color:0x121317, metal:0xc7a24e, rimT:4.5, depth:4.2, goldBridge:true, pads:true,
+    lens:{color:0x0b0c0f, opacity:0.93} },
+
+  { sku:"PO1019S", slug:"or-violet", name:"Or Violet",
+    lensW:53, bridge:20, temple:140, lensH:47, shape:"round",
+    front:"metal", metal:0xcaa54f, rimT:1.5, depth:1.4, pads:true,
+    lens:{color:0x4a2b6b, opacity:0.78}, tipColor:0x2a2118 },
+
+  { sku:"PO1018S", slug:"ida-doree", name:"Ida Dorée",
+    lensW:52, bridge:21, temple:145, lensH:45, shape:"round",
+    front:"metal", metal:0xcaa54f, rimT:1.5, depth:1.4, doubleBridge:true, pads:true,
+    lens:{color:0x1f4a34, opacity:0.84}, tipColor:0x2a2118 },
+
+  { sku:"PO3393S", slug:"havane-solaire", name:"Havane Solaire",
+    lensW:56, bridge:20, temple:145, lensH:43, shape:"pillow",
+    front:"acetate", color:0x6d4522, acetateWarm:true, metal:0xb9b9bd, rimT:5.5, depth:5.0, doubleBridge:true,
+    lens:{color:0x24402c, opacity:0.8} },
+
+  { sku:"PO3269S", slug:"noir-carre", name:"Noir Carré",
+    lensW:52, bridge:20, temple:145, lensH:44, shape:"square",
+    front:"acetate", color:0x111216, metal:0xb9b9bd, rimT:5.4, depth:4.8,
+    lens:{color:0x14161a, opacity:0.9} },
+
+  { sku:"PO3396S", slug:"noir-degrade", name:"Noir Dégradé",
+    lensW:53, bridge:20, temple:145, lensH:44, shape:"pillow",
+    front:"acetate", color:0x111216, metal:0xb9b9bd, rimT:5.2, depth:4.8,
+    lens:{color:0x3a3d44, opacity:0.72} },
+
+  { sku:"PO3342S", slug:"polar-noir", name:"Polar Noir",
+    lensW:63, bridge:14, temple:135, lensH:45, shape:"square",
+    front:"acetate", color:0x101115, metal:0xb9b9bd, rimT:5.0, depth:4.6,
+    lens:{color:0x1c3a2a, opacity:0.86} },
+
+  { sku:"PO3318V", slug:"indigo-optical", name:"Indigo Optical",
+    lensW:51, bridge:21, temple:145, lensH:43, shape:"square",
+    front:"acetate", color:0x1b3f8f, metal:0xb9b9bd, rimT:5.2, depth:4.6,
+    lens:{color:0xdfe8f2, opacity:0.12} },
+
+  { sku:"PO3007V", slug:"sauge-optical", name:"Sauge Optical",
+    lensW:52, bridge:19, temple:145, lensH:43, shape:"square",
+    front:"acetate", color:0x6e6f3a, metal:0xb9b9bd, rimT:5.0, depth:4.4,
+    lens:{color:0xe6ecdf, opacity:0.12} },
+];
+const CAL = {}; CATALOG.forEach(f => CAL[f.sku] = {y:0, z:0, scale:1});
+
+const G = { pitch:-8, smooth:0.6, occl:true, debug:false };
+const FOV = 63, mm = v => v/10;
+const TRACK = [168, 234, 454, 33, 263];   // arête du nez · côtés du crâne · coins des yeux
+
+/* ===== three.js ===== */
+const video=document.getElementById("cam"), canvas=document.getElementById("gl"), frameEl=document.getElementById("frame");
+const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true, powerPreference:"high-performance"});
+renderer.setPixelRatio(1);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(FOV, 1, 1, 500);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x2a3340, 0.9));
+const dl = new THREE.DirectionalLight(0xffffff, 1.4); dl.position.set(0.6,1.4,2.2); scene.add(dl);
+
+const head = new THREE.Group(); head.matrixAutoUpdate=false; scene.add(head);
+const occGeo = new THREE.SphereGeometry(1,24,18);
+const occluder = new THREE.Mesh(occGeo, new THREE.MeshBasicMaterial({colorWrite:false, depthWrite:true}));
+occluder.renderOrder = -1; head.add(occluder);
+const debugOcc = new THREE.Mesh(occGeo, new THREE.MeshBasicMaterial({color:0x3aa0ff, wireframe:true}));
+debugOcc.visible=false; head.add(debugOcc);
+const marker = new THREE.Mesh(new THREE.SphereGeometry(0.2,10,8), new THREE.MeshBasicMaterial({color:0xff4d4d}));
+marker.visible=false; head.add(marker);
+const rig = new THREE.Group(); head.add(rig);
+
+/* ===== géométrie paramétrique ===== */
+const EXP = {round:2.0, pillow:3.2, square:4.6};
+const superPts=(w,h,n,seg=56)=>{const p=[];for(let i=0;i<seg;i++){const t=i/seg*Math.PI*2,c=Math.cos(t),s=Math.sin(t);
+  p.push(new THREE.Vector2(Math.sign(c)*Math.pow(Math.abs(c),2/n)*w/2, Math.sign(s)*Math.pow(Math.abs(s),2/n)*h/2));}return p;};
+function rimGeo(w,h,t,d,n){
+  const sh=new THREE.Shape(superPts(w+2*t,h+2*t,n)); sh.holes.push(new THREE.Path(superPts(w,h,n).reverse()));
+  const g=new THREE.ExtrudeGeometry(sh,{depth:d,bevelEnabled:true,bevelSize:t*0.16,bevelThickness:d*0.18,bevelSegments:1,curveSegments:6});
+  g.translate(0,0,-d/2); return g;
+}
+function lensG(w,h,n){
+  const g=new THREE.ExtrudeGeometry(new THREE.Shape(superPts(w+0.02,h+0.02,n)),{depth:0.1,bevelEnabled:false,curveSegments:6});
+  g.translate(0,0,-0.05); return g;
+}
+function rrect(w,h,r){const s=new THREE.Shape();s.moveTo(-w/2+r,-h/2);s.lineTo(w/2-r,-h/2);s.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);
+  s.lineTo(w/2,h/2-r);s.quadraticCurveTo(w/2,h/2,w/2-r,h/2);s.lineTo(-w/2+r,h/2);s.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);
+  s.lineTo(-w/2,-h/2+r);s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);return s;}
+function templeG(y0,len,th,ta,splay){
+  const c=new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0,           y0,      0.05),
+    new THREE.Vector3(splay*0.62,  y0,     -len*0.16),
+    new THREE.Vector3(splay*0.98,  y0-0.05,-len*0.42),
+    new THREE.Vector3(splay*0.95,  y0-0.30,-len*0.74),
+    new THREE.Vector3(splay*0.80,  y0-1.30,-len*0.92)]);
+  return new THREE.ExtrudeGeometry(rrect(th,ta,Math.min(th,ta)*0.42),{extrudePath:c,steps:34,bevelEnabled:false,curveSegments:5});
+}
+
+function buildFrame(f){
+  const g=new THREE.Group();
+  const lw=mm(f.lensW), lh=mm(f.lensH), br=mm(f.bridge), rt=mm(f.rimT), dp=mm(f.depth);
+  const n=EXP[f.shape], dx=(lw+br)/2;
+  const metalMat=new THREE.MeshPhysicalMaterial({color:f.metal??0xc7a24e, metalness:1, roughness:0.22});
+  const frontMat = f.front==="metal" ? metalMat : new THREE.MeshPhysicalMaterial({
+    color:f.color, metalness:0.02, roughness:f.acetateWarm?0.36:0.3, clearcoat:1, clearcoatRoughness:0.16,
+    sheen:f.acetateWarm?0.4:0, sheenColor:new THREE.Color(0xc08a4a)});
+  const lensMat=new THREE.MeshPhysicalMaterial({color:f.lens.color, transparent:true, opacity:f.lens.opacity,
+    roughness:0.04, metalness:0, envMapIntensity:1.6, depthWrite:false, side:THREE.DoubleSide});
+  const rG=rimGeo(lw,lh,rt,dp,n), lG=lensG(lw,lh,n), form=THREE.MathUtils.degToRad(6);
+
+  const temples=[];
+  for (const s of [-1,1]){
+    const side=new THREE.Group(); side.position.x=s*dx; side.rotation.y=-s*form; g.add(side);
+    side.add(new THREE.Mesh(rG, frontMat));
+    const lens=new THREE.Mesh(lG, lensMat); lens.renderOrder=1; side.add(lens);
+    if (f.pads){ const p=new THREE.Mesh(new THREE.SphereGeometry(0.16,8,6), metalMat);
+      p.scale.set(0.55,1.5,0.5); p.position.set(-s*(lw/2-0.15), -lh*0.18, -0.35); side.add(p); }
+
+    const t=new THREE.Group(); t.userData.side=s; g.add(t); temples.push(t);
+    const hinge=new THREE.Mesh(new THREE.CylinderGeometry(mm(2.2),mm(2.2),Math.max(dp,0.35),10), metalMat);
+    hinge.rotation.z=Math.PI/2; hinge.position.set(0, lh*0.18, -0.15); t.add(hinge);
+    const arm=new THREE.Mesh(templeG(lh*0.18, mm(f.temple)*0.92, f.front==="metal"?0.14:0.3, f.front==="metal"?0.22:0.42, 0),
+      f.front==="metal"?metalMat:frontMat);
+    t.add(arm); t.userData.arm=arm;
+    const arrow=new THREE.Mesh(new THREE.ExtrudeGeometry(new THREE.Shape(
+      [new THREE.Vector2(0,0.1),new THREE.Vector2(0.4,0),new THREE.Vector2(0,-0.1)]),{depth:0.04,bevelEnabled:false}),
+      new THREE.MeshPhysicalMaterial({color:0xd8d8dc, metalness:1, roughness:0.18}));
+    arrow.rotation.y=Math.PI/2; arrow.position.set(s*0.1, lh*0.18, -0.75); t.add(arrow);
+    if (f.tipColor){ const tip=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.46,2.2),
+      new THREE.MeshPhysicalMaterial({color:f.tipColor, roughness:0.35, clearcoat:1}));
+      tip.position.set(-0.25, lh*0.18-1.1, -mm(f.temple)*0.85); tip.rotation.x=0.5; t.add(tip); }
+  }
+  if (f.front==="metal" || f.goldBridge){
+    const b=new THREE.Mesh(new THREE.TorusGeometry(br/2+rt*0.4, mm(1.6), 6, 18, Math.PI), metalMat);
+    b.position.y=lh*0.16; g.add(b);
+  } else {
+    const b=new THREE.Mesh(new THREE.BoxGeometry(br+rt, mm(9), dp*0.9), frontMat);
+    b.position.y=lh/2-mm(4.5); g.add(b);
+  }
+  if (f.doubleBridge){
+    const bar=new THREE.Mesh(new THREE.CylinderGeometry(mm(1.5),mm(1.5),br+lw*0.5,8),
+      f.front==="metal"?metalMat:new THREE.MeshPhysicalMaterial({color:f.metal,metalness:1,roughness:0.25}));
+    bar.rotation.z=Math.PI/2; bar.position.y=lh/2+rt*0.2; g.add(bar);
+  }
+  g.userData={spec:f, temples, frontHalf:dx+lw/2+rt, splay:0,
+    tGeo:{y:lh*0.18, len:mm(f.temple)*0.92, th:f.front==="metal"?0.14:0.3, ta:f.front==="metal"?0.22:0.42}};
+  return g;
+}
+
+/* ===== ancrage automatique (moindres carrés sur la pose de la tête) ===== */
+const SOLVE={}, blank=()=>({ATA:new Float64Array(9), ATb:new Float64Array(3), n:0, P:null});
+TRACK.forEach(i=>SOLVE[i]=blank());
+let anchorReady=false;
+function addRow(S,a,b){const[x,y,z]=a;
+  S.ATA[0]+=x*x;S.ATA[1]+=x*y;S.ATA[2]+=x*z;S.ATA[3]+=y*x;S.ATA[4]+=y*y;S.ATA[5]+=y*z;
+  S.ATA[6]+=z*x;S.ATA[7]+=z*y;S.ATA[8]+=z*z;S.ATb[0]+=x*b;S.ATb[1]+=y*b;S.ATb[2]+=z*b;}
+const det3=q=>q[0]*(q[4]*q[8]-q[5]*q[7])-q[1]*(q[3]*q[8]-q[5]*q[6])+q[2]*(q[3]*q[7]-q[4]*q[6]);
+function solve3(A,b){
+  const m=[A[0]+1e-4,A[1],A[2],A[3],A[4]+1e-4,A[5],A[6],A[7],A[8]+1e-4], d=det3(m);
+  if (Math.abs(d)<1e-8) return null;
+  const col=i=>{const q=m.slice();q[i]=b[0];q[i+3]=b[1];q[i+6]=b[2];return q;};
+  return new THREE.Vector3(det3(col(0))/d, det3(col(1))/d, det3(col(2))/d);
+}
+function accumulate(el, lm, aspect){
+  const t=Math.tan(THREE.MathUtils.degToRad(FOV/2));
+  const R0=[el[0],el[4],el[8]], R1=[el[1],el[5],el[9]], R2=[el[2],el[6],el[10]], T=[el[12],el[13],el[14]];
+  for (const i of TRACK){
+    const p=lm[i]; if(!p) continue;
+    const A=(2*p.x-1)*aspect*t, B=(1-2*p.y)*t, S=SOLVE[i];
+    addRow(S,[R0[0]+A*R2[0],R0[1]+A*R2[1],R0[2]+A*R2[2]], -(T[0]+A*T[2]));
+    addRow(S,[R1[0]+B*R2[0],R1[1]+B*R2[1],R1[2]+B*R2[2]], -(T[1]+B*T[2]));
+    S.n++;
+  }
+}
+function trySolve(){
+  let ok=true;
+  for (const i of TRACK){
+    const S=SOLVE[i]; if (S.n<25){ok=false;continue;}
+    const P=solve3(S.ATA,S.ATb);
+    if (!P||!isFinite(P.x)||P.length()>40){ok=false;continue;}
+    S.P = S.P ? S.P.lerp(P,0.4) : P;
+  }
+  anchorReady = ok && TRACK.every(i=>SOLVE[i].P);
+  return anchorReady;
+}
+function resetAnchor(){ TRACK.forEach(i=>SOLVE[i]=blank()); anchorReady=false; setStatus("Calage en cours", false); }
+
+/* ===== placement ===== */
+const FALLBACK={ nose:new THREE.Vector3(0,2.3,5.2), halfW:7.2 };
+let current=null, currentSku=null;
+const pName=document.getElementById("pName"), pMeta=document.getElementById("pMeta");
+
+function place(){
+  if (!current) return;
+  const c=CAL[currentSku];
+  const nose  = anchorReady ? SOLVE[168].P : FALLBACK.nose;
+  const halfW = anchorReady ? (Math.abs(SOLVE[234].P.x)+Math.abs(SOLVE[454].P.x))/2 : FALLBACK.halfW;
+  const eyeY  = anchorReady ? (SOLVE[33].P.y+SOLVE[263].P.y)/2 : FALLBACK.nose.y-1.0;
+
+  rig.position.set(0, eyeY+0.12+c.y, nose.z+0.85+c.z);
+  rig.rotation.x = THREE.MathUtils.degToRad(G.pitch);
+  rig.scale.setScalar(c.scale);
+
+  const u=current.userData;
+  u.temples.forEach(t=>t.position.x = t.userData.side*u.frontHalf);
+  const splay = Math.max(0, halfW*1.08 - u.frontHalf);
+  if (Math.abs(splay-u.splay)>0.04){
+    u.splay=splay;
+    u.temples.forEach(t=>{ const s=t.userData.side, a=t.userData.arm;
+      a.geometry.dispose(); a.geometry=templeG(u.tGeo.y,u.tGeo.len,u.tGeo.th,u.tGeo.ta, splay*s); });
+  }
+
+  occluder.scale.set(halfW*0.88, 9.2, 7.4);
+  occluder.position.set(0, eyeY-1.9, rig.position.z-1.0-7.4);
+  occluder.visible = G.occl;
+  debugOcc.scale.copy(occluder.scale); debugOcc.position.copy(occluder.position); debugOcc.visible=G.debug;
+  marker.position.copy(nose); marker.visible=G.debug;
+
+  const f=u.spec, total=f.lensW*2+f.bridge+f.rimT*2, faceW=halfW*20;
+  const verdict = total<faceW*0.86 ? "plus étroite que le visage"
+               : total>faceW*1.04 ? "plus large que le visage" : "proportion ajustée";
+  pName.textContent = f.name;
+  pMeta.innerHTML = `${f.sku} · ${f.lensW}–${f.bridge}–${f.temple} · ${Math.round(total)} mm`
+    + (anchorReady ? ` · <b>${verdict}</b>` : "");
+  document.getElementById("dump").value = JSON.stringify(CAL)
+    + `\n// global: pitch ${G.pitch}, smooth ${G.smooth}`
+    + (anchorReady ? `\n// nez [${SOLVE[168].P.toArray().map(v=>v.toFixed(2)).join(", ")}] · demi-largeur crâne ${halfW.toFixed(2)} cm · PD estimé ${pdEst} mm` : "\n// ancrage en cours");
+}
+
+function select(sku){
+  const f=CATALOG.find(x=>x.sku===sku); if(!f) return;
+  if (current) rig.remove(current);
+  current=buildFrame(f); currentSku=sku; rig.add(current);
+  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.sku===sku));
+  syncSliders(); place();
+  try{ history.replaceState(null,"",`?frame=${sku}`); }catch{}
+  if (window.parent !== window) parent.postMessage({type:"joury-tryon:frame", sku, slug:f.slug, name:f.name}, location.origin);
+}
+const rail=document.getElementById("rail");
+CATALOG.forEach(f=>{ const b=document.createElement("button");
+  b.className="chip"; b.dataset.sku=f.sku; b.type="button";
+  b.innerHTML=`${f.name}<small>${f.sku} · ${f.lensW}-${f.bridge}-${f.temple}</small>`;
+  b.onclick=()=>select(f.sku); rail.appendChild(b); });
+
+/* ===== réglages ===== */
+const S_={y:["s-y","o-y",2], z:["s-z","o-z",2], scale:["s-scale","o-scale",3], pitch:["s-pitch","o-pitch",0], smooth:["s-smooth","o-smooth",2]};
+for (const [k,[id,out,dec]] of Object.entries(S_)){
+  const el=document.getElementById(id), o=document.getElementById(out);
+  el.oninput=()=>{ const v=parseFloat(el.value);
+    if (k==="y"||k==="z"||k==="scale") CAL[currentSku][k]=v; else G[k]=v;
+    o.textContent=v.toFixed(dec); place(); };
+}
+function syncSliders(){ const c=CAL[currentSku];
+  const s=(id,out,v,d)=>{document.getElementById(id).value=v; document.getElementById(out).textContent=(+v).toFixed(d);};
+  s("s-y","o-y",c.y,2); s("s-z","o-z",c.z,2); s("s-scale","o-scale",c.scale,3); }
+document.getElementById("c-occl").onchange=e=>{G.occl=e.target.checked; place();};
+document.getElementById("c-debug").onchange=e=>{G.debug=e.target.checked; place();};
+document.getElementById("tuneBtn").onclick=e=>{
+  const open=document.getElementById("tune").classList.toggle("open");
+  e.currentTarget.setAttribute("aria-expanded", open); };
+document.getElementById("copy").onclick=()=>navigator.clipboard.writeText(document.getElementById("dump").value)
+  .then(()=>document.getElementById("copy").textContent="Calibrage copié");
+document.getElementById("reset").onclick=resetAnchor;
+document.getElementById("closeBtn").onclick=()=>{
+  stop();
+  if (window.parent!==window) parent.postMessage({type:"joury-tryon:close"}, location.origin);
+  else if (history.length>1) history.back(); else location.href="/collections/";
+};
+
+/* ===== statut ===== */
+const dot=document.getElementById("dot"), statusText=document.getElementById("statusText");
+function setStatus(text, live){ statusText.textContent=text; dot.className = live?"live":""; }
+
+/* ===== caméra + modèle ===== */
+let landmarker=null, stream=null, running=false;
+document.getElementById("start").onclick = async () => {
+  setStatus("Chargement…", false);
+  document.getElementById("start").disabled = true;
+  try{
+    const fs = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    const [s, lmk] = await Promise.all([
+      navigator.mediaDevices.getUserMedia({video:{facingMode:"user", width:{ideal:640}, height:{ideal:480}}}),
+      FaceLandmarker.createFromOptions(fs,{
+        baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task", delegate:"GPU"},
+        runningMode:"VIDEO", numFaces:1, outputFacialTransformationMatrixes:true, outputFaceBlendshapes:false})
+    ]);
+    stream=s; landmarker=lmk; video.srcObject=s; await video.play();
+    document.getElementById("gate").style.display="none";
+    document.getElementById("shot").disabled=false;
+    setStatus("Calage en cours", false);
+    running=true; layout(); loop();
+  }catch(e){
+    document.getElementById("start").disabled=false;
+    setStatus("Caméra indisponible", false);
+    document.querySelector("#gate p").textContent =
+      "La caméra n'a pas pu démarrer. Vérifiez l'autorisation du navigateur — une connexion sécurisée (https) est requise. " + e.message;
+  }
+};
+function stop(){ running=false; if (stream) stream.getTracks().forEach(t=>t.stop()); }
+addEventListener("pagehide", stop);
+
+function layout(){
+  const st=document.getElementById("stage"), vw=video.videoWidth||16, vh=video.videoHeight||9;
+  const s=Math.min(st.clientWidth/vw, st.clientHeight/vh), w=Math.round(vw*s), h=Math.round(vh*s);
+  frameEl.style.width=w+"px"; frameEl.style.height=h+"px";
+  renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+}
+addEventListener("resize", layout);
+
+/* ===== boucle ===== */
+const raw=new THREE.Matrix4(), pR=new THREE.Vector3(), qR=new THREE.Quaternion(), sR=new THREE.Vector3();
+const pS=new THREE.Vector3(), qS=new THREE.Quaternion();
+let init=false, last=-1, frames=0, pdEst="–";
+
+function loop(){
+  if (!running) return;
+  requestAnimationFrame(loop);
+  if (!landmarker || video.readyState<2) return;
+  if (video.currentTime===last){ renderer.render(scene,camera); if (shotPending) capture(); return; }
+  last=video.currentTime;
+  if (frameEl.clientWidth !== renderer.domElement.clientWidth) layout();
+
+  const res=landmarker.detectForVideo(video, performance.now());
+  const m=res.facialTransformationMatrixes?.[0], lm=res.faceLandmarks?.[0];
+
+  if (m && lm){
+    raw.fromArray(m.data); frames++;
+    if (!anchorReady || frames%45===0){
+      accumulate(m.data, lm, camera.aspect);
+      if (frames%8===0){
+        if (trySolve()){ setStatus("Aperçu actif", true); place(); }
+        else if (!anchorReady) setStatus("Calage "+Math.min(99,Math.round(SOLVE[168].n/25*100))+" %", false);
+      }
+    }
+    raw.decompose(pR,qR,sR);
+    if (!init){ pS.copy(pR); qS.copy(qR); init=true; }
+    const a = 1 - G.smooth*Math.exp(-pS.distanceTo(pR)*2.5);
+    pS.lerp(pR,a); qS.slerp(qR,a);
+    head.matrix.compose(pS,qS,sR); head.matrixWorldNeedsUpdate=true; head.visible=true;
+
+    if (lm[468] && lm[473]){
+      const px=Math.hypot((lm[468].x-lm[473].x)*video.videoWidth,(lm[468].y-lm[473].y)*video.videoHeight);
+      const fpx=(video.videoHeight/2)/Math.tan(THREE.MathUtils.degToRad(FOV/2));
+      pdEst=(px*(-pS.z)/fpx*10).toFixed(0);
+    }
+  } else { head.visible=false; init=false; if (anchorReady) setStatus("Visage non détecté", false); }
+
+  renderer.render(scene,camera);
+  if (shotPending) capture();
+}
+
+/* ===== photo =====
+   Le canvas WebGL est effacé après chaque présentation : impossible de le lire
+   depuis un gestionnaire de clic. On lève un drapeau, et la capture se fait dans
+   la boucle, juste après le rendu. */
+let shotPending = false;
+document.getElementById("shot").onclick = () => { shotPending = true; };
+
+function capture(){
+  shotPending = false;
+  if (!video.videoWidth) return;
+  const c=document.createElement("canvas"); c.width=video.videoWidth; c.height=video.videoHeight;
+  const x=c.getContext("2d");
+  x.translate(c.width,0); x.scale(-1,1);
+  x.drawImage(video,0,0,c.width,c.height);
+  x.drawImage(renderer.domElement,0,0,c.width,c.height);
+  x.setTransform(1,0,0,1,0,0);
+  const f=CATALOG.find(v=>v.sku===currentSku);
+  const pad=Math.round(c.height*0.045);
+  x.fillStyle="rgba(4,23,24,.78)"; x.fillRect(0, c.height-pad*2.4, c.width, pad*2.4);
+  x.fillStyle="#f4efe7"; x.font=`${Math.round(c.height*0.045)}px Georgia,serif`;
+  x.fillText(f.name, pad, c.height-pad*1.15);
+  x.fillStyle="#c49a58"; x.font=`600 ${Math.round(c.height*0.026)}px Helvetica,sans-serif`;
+  x.fillText(`JOURY OPTIC \u00b7 ${f.sku}`, pad, c.height-pad*0.42);
+  const a=document.createElement("a"); a.download=`joury-${f.sku}.png`; a.href=c.toDataURL("image/png"); a.click();
+  const b=document.getElementById("shot"); b.textContent="Photo enregistrée";
+  setTimeout(()=>b.textContent="Photo", 1800);
+}
+
+/* ===== démarrage ===== */
+const params = new URLSearchParams(location.search);
+if (params.get("dev") === "1") document.getElementById("tuneBtn").hidden = false;
+const wanted = params.get("frame");
+select(CATALOG.some(f=>f.sku===wanted) ? wanted : CATALOG[0].sku);
+</script>
+</body>
+</html>

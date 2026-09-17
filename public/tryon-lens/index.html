@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Essayage virtuel de lentilles | Joury Optic</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --bg-page:#f4f1ea;
+    --stage:#0f1c17;
+    --stage-2:#152420;
+    --gold:#c9a24a;
+    --gold-soft:#e8d5a3;
+    --ink:#f4f1ea;
+    --muted:#8fa199;
+    --line:rgba(201,162,74,.18);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',-apple-system,sans-serif;
+    background:var(--bg-page);
+    color:#1c1c1a;
+    padding:28px 16px 70px;
+  }
+  .top{max-width:520px;margin:0 auto 18px;}
+  .brand{
+    font-size:0.68rem;
+    letter-spacing:.14em;
+    color:#a89a7a;
+    font-weight:600;
+    margin-bottom:8px;
+    text-transform:uppercase;
+  }
+  h1{
+    font-family:'Cormorant Garamond',serif;
+    font-size:2rem;
+    font-weight:600;
+    margin:0 0 6px;
+    color:#171712;
+  }
+  p.sub{
+    margin:0;
+    color:#6b6a63;
+    font-size:0.88rem;
+    line-height:1.5;
+    max-width:420px;
+  }
+
+  .stage{
+    max-width:520px;
+    margin:20px auto 0;
+    background:linear-gradient(180deg,var(--stage),var(--stage-2));
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 18px 40px -18px rgba(15,28,23,.55);
+  }
+  .stage-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .stage-head .name{
+    color:var(--gold-soft);
+    font-size:0.78rem;
+    font-weight:600;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .status{
+    color:var(--muted);
+    display:flex;align-items:center;gap:7px;
+    font-size:0.76rem;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);transition:background .2s;}
+  .dot.live{background:#6bd090;box-shadow:0 0 8px #6bd09090;}
+
+  .video-wrap{
+    position:relative;
+    width:100%;
+    aspect-ratio:4/3;
+    background:#000;
+    overflow:hidden;
+  }
+  video, canvas{
+    position:absolute;top:0;left:0;
+    width:100%;height:100%;
+    object-fit:cover;
+  }
+  video{transform:scaleX(-1);}
+  .vignette{
+    position:absolute;inset:0;
+    box-shadow:inset 0 0 90px 20px rgba(0,0,0,.45);
+    pointer-events:none;
+  }
+
+  .gate{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:30px;
+    background:radial-gradient(120% 100% at 50% 0%, #1a2b24 0%, var(--stage) 70%);
+    gap:16px;
+  }
+  .gate h2{
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.4rem;margin:0;font-weight:600;color:var(--ink);
+  }
+  .gate p{font-size:0.82rem;color:var(--muted);margin:0;max-width:300px;line-height:1.55;}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
+  .pill{
+    font-size:0.68rem;color:var(--gold-soft);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:5px 12px;
+    letter-spacing:.02em;
+  }
+  .gold-btn{
+    margin-top:6px;
+    background:linear-gradient(180deg,#dcb95f,var(--gold));
+    color:#211a08;
+    border:none;
+    border-radius:9px;
+    padding:13px 26px;
+    font-size:0.84rem;
+    font-weight:700;
+    letter-spacing:.03em;
+    cursor:pointer;
+    box-shadow:0 8px 20px -8px rgba(201,162,74,.6);
+  }
+  .gold-btn:active{transform:translateY(1px);}
+
+  .controls{
+    padding:18px 20px 22px;
+    display:none;
+  }
+  .controls.on{display:block;}
+  .section-label{
+    font-size:0.72rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    margin:0 0 10px;
+  }
+  .swatches{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .swatch-btn{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:none;border:none;cursor:pointer;padding:0;
+  }
+  .swatch{
+    width:34px;height:34px;border-radius:50%;
+    border:2px solid transparent;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.18), 0 2px 6px rgba(0,0,0,.4);
+    transition:border-color .15s, transform .15s;
+  }
+  .swatch-btn.active .swatch{border-color:var(--gold);transform:scale(1.08);}
+  .swatch-label{font-size:0.62rem;color:var(--muted);}
+
+  .custom-row{
+    display:flex;align-items:center;gap:14px;margin-bottom:20px;
+    padding-top:14px;border-top:1px solid var(--line);
+  }
+  input[type=color]{
+    width:34px;height:34px;border:none;background:none;padding:0;cursor:pointer;
+    border-radius:50%;overflow:hidden;
+  }
+  .slider-block{flex:1;}
+  .slider-block .section-label{margin-bottom:6px;}
+  input[type=range]{width:100%;accent-color:var(--gold);}
+
+  .btnrow{display:flex;gap:10px;margin-top:4px;}
+  .btnrow button{
+    flex:1;border:none;border-radius:9px;padding:12px 14px;
+    font-size:0.82rem;font-weight:600;cursor:pointer;
+    letter-spacing:.02em;
+  }
+  .stop{background:rgba(232,213,163,.1);color:var(--gold-soft);border:1px solid var(--line) !important;}
+  .stop:hover{background:rgba(232,213,163,.16);}
+
+  .note{
+    max-width:520px;margin:16px auto 0;
+    font-size:0.76rem;color:#9a9686;line-height:1.6;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">Joury Optic · Prototype</div>
+  <h1>Essayage virtuel — Lentilles</h1>
+  <p class="sub">Votre regard, réinventé en direct. Le calcul se fait entièrement sur votre appareil.</p>
+</div>
+
+<div class="stage">
+  <div class="stage-head">
+    <div class="name">Essayage lentilles</div>
+    <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Caméra en attente</span></div>
+  </div>
+  <div class="video-wrap">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="overlay"></canvas>
+    <div class="vignette"></div>
+    <div class="gate" id="gate">
+      <h2>Votre prochain regard</h2>
+      <p>L'aperçu est calculé sur votre appareil. Aucune image n'est enregistrée ni envoyée à Joury Optic.</p>
+      <div class="pills">
+        <div class="pill">Accord explicite</div>
+        <div class="pill">Aucun envoi d'image</div>
+        <div class="pill">Arrêt à tout moment</div>
+      </div>
+      <button class="gold-btn" id="startBtn">AUTORISER LA CAMÉRA</button>
+    </div>
+  </div>
+  <div class="controls" id="controls">
+    <div class="section-label">Couleur de la lentille</div>
+    <div class="swatches" id="swatches"></div>
+    <div class="custom-row">
+      <input type="color" id="customColor" value="#2e6db4">
+      <div class="slider-block">
+        <div class="section-label">Intensité</div>
+        <input type="range" id="intensity" min="0" max="100" value="70">
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="stop" id="stopBtn">Arrêter la caméra</button>
+    </div>
+  </div>
+</div>
+
+<p class="note">Prototype technique — pour valider le réalisme avant intégration à jouryoptic.com.</p>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script>
+const video = document.getElementById('video');
+const overlay = document.getElementById('overlay');
+const ctx = overlay.getContext('2d');
+const gate = document.getElementById('gate');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const controls = document.getElementById('controls');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const intensity = document.getElementById('intensity');
+const customColor = document.getElementById('customColor');
+const swatchesEl = document.getElementById('swatches');
+
+const COLOR_DEFS = [
+  {c:'#4a2f1a', label:'Noisette'},
+  {c:'#2e6db4', label:'Bleu'},
+  {c:'#3f8f5f', label:'Vert'},
+  {c:'#8a6b3f', label:'Miel'},
+  {c:'#6b6b6b', label:'Gris'},
+  {c:'#1a1a1a', label:'Noir'}
+];
+let selectedColor = COLOR_DEFS[1].c;
+let camera = null;
+let faceMesh = null;
+
+// smoothing state (exponential moving average per eye)
+let smooth = {left:null, right:null};
+const SMOOTH_ALPHA = 0.35;
+
+COLOR_DEFS.forEach((def,i)=>{
+  const btn = document.createElement('button');
+  btn.className = 'swatch-btn' + (i===1?' active':'');
+  btn.innerHTML = `<span class="swatch" style="background:${def.c}"></span><span class="swatch-label">${def.label}</span>`;
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.swatch-btn').forEach(el=>el.classList.remove('active'));
+    btn.classList.add('active');
+    selectedColor = def.c;
+  });
+  swatchesEl.appendChild(btn);
+});
+customColor.addEventListener('input', ()=>{
+  document.querySelectorAll('.swatch-btn').forEach(el=>el.classList.remove('active'));
+  selectedColor = customColor.value;
+});
+
+function initFaceMesh(){
+  faceMesh = new FaceMesh({locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
+  faceMesh.setOptions({
+    maxNumFaces:1,
+    refineLandmarks:true,
+    minDetectionConfidence:0.5,
+    minTrackingConfidence:0.5
+  });
+  faceMesh.onResults(onResults);
+}
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function smoothEye(key, raw){
+  if(!raw){ smooth[key]=null; return null; }
+  if(!smooth[key]){ smooth[key]=raw; return raw; }
+  smooth[key] = {
+    cx: lerp(smooth[key].cx, raw.cx, SMOOTH_ALPHA),
+    cy: lerp(smooth[key].cy, raw.cy, SMOOTH_ALPHA),
+    r:  lerp(smooth[key].r,  raw.r,  SMOOTH_ALPHA)
+  };
+  return smooth[key];
+}
+
+function onResults(results){
+  overlay.width = video.videoWidth;
+  overlay.height = video.videoHeight;
+  ctx.save();
+  ctx.clearRect(0,0,overlay.width,overlay.height);
+  ctx.translate(overlay.width,0);
+  ctx.scale(-1,1);
+
+  if(results.multiFaceLandmarks && results.multiFaceLandmarks.length>0){
+    statusText.textContent = 'Regard détecté';
+    statusDot.classList.add('live');
+    const lm = results.multiFaceLandmarks[0];
+    const w = overlay.width, h = overlay.height;
+    const toPx = i => ({x: lm[i].x*w, y: lm[i].y*h});
+
+    function irisFromIndices(centerIdx, boundaryIdxs){
+      const c = toPx(centerIdx);
+      let rSum = 0;
+      boundaryIdxs.forEach(bi=>{
+        const b = toPx(bi);
+        rSum += Math.hypot(b.x-c.x, b.y-c.y);
+      });
+      return {cx:c.x, cy:c.y, r:(rSum/boundaryIdxs.length)};
+    }
+
+    const rawLeft = irisFromIndices(468,[469,470,471,472]);
+    const rawRight = irisFromIndices(473,[474,475,476,477]);
+    const left = smoothEye('left', rawLeft);
+    const right = smoothEye('right', rawRight);
+    const alpha = intensity.value/100;
+
+    [left,right].forEach(eye=>{
+      const R = eye.r*0.85;
+
+      // Step 1 — lighten the iris base (mimics the white backing layer
+      // real cosmetic lenses use so color shows on dark/brown eyes)
+      const liftGrad = ctx.createRadialGradient(eye.cx, eye.cy, 0, eye.cx, eye.cy, R);
+      liftGrad.addColorStop(0, `rgba(255,255,255,${0.34*alpha})`);
+      liftGrad.addColorStop(0.7, `rgba(255,255,255,${0.30*alpha})`);
+      liftGrad.addColorStop(1, `rgba(255,255,255,0)`);
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = liftGrad;
+      ctx.beginPath();
+      ctx.arc(eye.cx, eye.cy, R, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // Step 2 — direct color tint on top of the lightened base, so hue
+      // is visible regardless of how dark the underlying iris is
+      const tintGrad = ctx.createRadialGradient(eye.cx, eye.cy, 0, eye.cx, eye.cy, R);
+      tintGrad.addColorStop(0, hexToRgba(selectedColor, 0.55*alpha));
+      tintGrad.addColorStop(0.75, hexToRgba(selectedColor, 0.5*alpha));
+      tintGrad.addColorStop(1, hexToRgba(selectedColor, 0));
+      ctx.save();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = tintGrad;
+      ctx.beginPath();
+      ctx.arc(eye.cx, eye.cy, R, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // Step 3 — subtle multiply pass to restore natural shading/depth
+      // (limbal ring, iris texture) so it doesn't look like a flat sticker
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = selectedColor;
+      ctx.beginPath();
+      ctx.arc(eye.cx, eye.cy, R*1.02, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      // punch the center back out so multiply doesn't darken the pupil zone
+      ctx.globalCompositeOperation = 'destination-out';
+      const punchGrad = ctx.createRadialGradient(eye.cx, eye.cy, 0, eye.cx, eye.cy, eye.r*0.4);
+      punchGrad.addColorStop(0, 'rgba(0,0,0,0.35)');
+      punchGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = punchGrad;
+      ctx.beginPath();
+      ctx.arc(eye.cx, eye.cy, eye.r*0.4, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // pupil — kept dark and natural, slightly smaller than iris
+      ctx.save();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 0.82;
+      ctx.fillStyle = '#050505';
+      ctx.beginPath();
+      ctx.arc(eye.cx, eye.cy, eye.r*0.32, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // limbal ring — thin dark edge around the iris for realism
+      ctx.save();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = Math.max(1, R*0.08);
+      ctx.beginPath();
+      ctx.arc(eye.cx, eye.cy, R*0.95, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    });
+  } else {
+    statusText.textContent = 'Recherche du visage...';
+    statusDot.classList.remove('live');
+    smooth.left = null; smooth.right = null;
+  }
+  ctx.restore();
+}
+
+function hexToRgba(hex, a){
+  const v = hex.replace('#','');
+  const r = parseInt(v.substring(0,2),16);
+  const g = parseInt(v.substring(2,4),16);
+  const b = parseInt(v.substring(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+startBtn.addEventListener('click', async ()=>{
+  try{
+    initFaceMesh();
+    camera = new Camera(video, {
+      onFrame: async ()=>{ await faceMesh.send({image:video}); },
+      width:640, height:480
+    });
+    await camera.start();
+    gate.style.display = 'none';
+    controls.classList.add('on');
+    statusText.textContent = 'Caméra active';
+  }catch(err){
+    statusText.textContent = 'Caméra refusée';
+    alert('ماقدرش نحل الكاميرا. تأكد بلي عطيتي الإذن للمتصفح.');
+  }
+});
+
+stopBtn.addEventListener('click', ()=>{
+  if(camera){ camera.stop(); }
+  const stream = video.srcObject;
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); }
+  gate.style.display = 'flex';
+  controls.classList.remove('on');
+  statusText.textContent = 'Caméra en attente';
+  statusDot.classList.remove('live');
+  smooth.left = null; smooth.right = null;
+  ctx.clearRect(0,0,overlay.width,overlay.height);
+});
+</script>
+</body>
+</html>
