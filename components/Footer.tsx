@@ -1,6 +1,6 @@
 import { withBasePath } from "../lib/paths";
-﻿import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, MessageCircle } from "lucide-react";
 import { business, navigation } from "../lib/config";
 
 export default function Footer() {
@@ -24,8 +24,8 @@ export default function Footer() {
           </Link>
 
           <p>
-            Montures, technologies verri&egrave;res et accompagnement attentif
-            au c&oelig;ur de Casablanca depuis {business.founded}.
+            Montures, technologies verrières et accompagnement attentif
+            au cœur de Casablanca.
           </p>
         </div>
 
@@ -43,7 +43,7 @@ export default function Footer() {
             ))}
 
             <Link href="/confidentialite">
-              Confidentialit&eacute;
+              Confidentialité
             </Link>
           </nav>
         </div>
@@ -53,28 +53,39 @@ export default function Footer() {
 
           <address className="footer-address">
             <span>{business.address}</span>
-
-            <span>
-              Vendredi : ferm&eacute;
-            </span>
+            <span>Ouvert toute la semaine</span>
 
             <a href={`tel:${business.phoneHref}`}>
               {business.phoneDisplay}
             </a>
 
-            <span>
-              {business.contactName}
-            </span>
-
-            <a href={`mailto:${business.email}`}>
-              {business.email}
+            <a
+              href={business.mapsUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Ouvrir l’itinéraire
             </a>
+
+            <a
+              href={business.whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <MessageCircle size={14} /> WhatsApp
+            </a>
+
+            {business.email && (
+              <a href={`mailto:${business.email}`}>
+                {business.email}
+              </a>
+            )}
           </address>
         </div>
 
         <div className="footer-cta">
           <p className="footer-title">
-            Un conseil personnalis&eacute;
+            Un conseil personnalisé
           </p>
 
           <Link
@@ -82,7 +93,7 @@ export default function Footer() {
             className="footer-big-link"
           >
             <span>
-              Pr&eacute;parer votre visite
+              Préparer votre visite
             </span>
 
             <ArrowUpRight size={24} />
@@ -101,7 +112,7 @@ export default function Footer() {
           target="_blank"
           rel="noreferrer"
         >
-          Site con&ccedil;u par BuiltByAnas.com
+          Site conçu par BuiltByAnas.com
         </a>
       </div>
     </footer>
