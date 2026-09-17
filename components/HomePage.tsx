@@ -57,21 +57,13 @@ export default function HomePage() {
                 <Link href="/rendez-vous" className="button button-glass"><CalendarDays size={18} /> Préparer une visite</Link>
               </div>
               <div className="hero-exclusive-demo-row">
-                <Link
-                  href="/essayage#demo"
-                  className="hero-exclusive-demo"
-                  aria-label="Ouvrir la démo Try On Lunettes"
-                >
+                <Link href="/essayage#demo" className="hero-exclusive-demo" aria-label="Ouvrir la démo Try On Lunettes">
                   <Camera size={17} aria-hidden="true" />
                   <span>Try On Lunettes</span>
                   <strong>Essai en direct</strong>
                   <ArrowRight size={16} aria-hidden="true" />
                 </Link>
-                <Link
-                  href="/try-lens#demo"
-                  className="hero-exclusive-demo"
-                  aria-label="Ouvrir la démo Try Lens"
-                >
+                <Link href="/try-lens#demo" className="hero-exclusive-demo" aria-label="Ouvrir la démo Try Lens">
                   <Camera size={17} aria-hidden="true" />
                   <span>Try Lens</span>
                   <strong>Essai en direct</strong>
@@ -79,7 +71,6 @@ export default function HomePage() {
                 </Link>
               </div>
             </motion.div>
-
           </div>
 
           <div className="shell hero-bottom">
@@ -203,7 +194,6 @@ export default function HomePage() {
         </section>
 
         <SupplierSection />
-
         <IndoTechnologiesSection />
 
         <section className="visit-section">
@@ -216,7 +206,7 @@ export default function HomePage() {
             <p>Venez comparer les lignes, essayer les proportions et ajuster la monture avec un conseil personnel.</p>
             <div className="visit-address">
               <MapPin size={21} />
-              <div><strong>{business.address}</strong><span>Vendredi : fermé</span></div>
+              <div><strong>{business.address}</strong><span>Ouvert toute la semaine</span></div>
             </div>
             <Link href="/contact" className="button button-gold">Préparer la visite <ArrowRight size={18} /></Link>
           </div>
@@ -230,7 +220,8 @@ export default function HomePage() {
               <p>Préparez votre demande en quelques secondes. Joury vous contacte ensuite pour confirmer personnellement le créneau.</p>
               <div className="appointment-contact">
                 <a href={`tel:${business.phoneHref}`}>{business.phoneDisplay}</a>
-                <a href={`mailto:${business.email}`}>{business.email}</a>
+                <a href={business.whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>
+                {business.email && <a href={`mailto:${business.email}`}>{business.email}</a>}
               </div>
             </div>
             <div className="appointment-panel">
