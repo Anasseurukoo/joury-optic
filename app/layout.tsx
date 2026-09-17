@@ -70,10 +70,26 @@ const localBusinessJsonLd = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const heroImageUrl = withBasePath("/images/hero/joury-hero.png");
+
   return (
     <html lang="fr" data-scroll-behavior="smooth">
       <body>
-        <style dangerouslySetInnerHTML={{ __html: `:root{--joury-base-path:${siteBasePath}}` }} />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              :root{--joury-base-path:${siteBasePath}}
+              .original-home-hero .hero-background{
+                background-image:
+                  linear-gradient(90deg, rgba(0,0,0,.97) 0%, rgba(0,0,0,.90) 28%, rgba(0,0,0,.46) 58%, rgba(0,0,0,.10) 100%),
+                  linear-gradient(0deg, rgba(0,0,0,.42), rgba(0,0,0,.04) 56%, rgba(0,0,0,.30) 100%),
+                  url("${heroImageUrl}") !important;
+                background-size: cover !important;
+                background-position: center center !important;
+              }
+            `,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd).replace(/</g, "\\u003c") }}
