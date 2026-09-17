@@ -1,15 +1,16 @@
 export const business = {
   name: "Joury Optic",
   city: "Casablanca",
-  founded: 2024,
-  address: "Casablanca, Maroc",
-  phoneDisplay: "+212 6 XX XX XX",
+  address: "Casablanca – Errahma, Maroc",
+  phoneDisplay: "06 60 77 19 93 · 05 20 01 07 34",
+  phoneHref: "+212660771993",
+  phoneSecondaryHref: "+212520010734",
+  whatsappUrl: "https://wa.me/message/46TPL4PQPFWVJ1",
+  mapsUrl: "https://maps.app.goo.gl/o3r75XCxpuE4F8Pt5",
   contactName: "Joury Optic",
-  phoneHref: "+2126XXXXXXX",
-  whatsappNumber: "2126XXXXXXX",
-  email: "contact@jouryoptic.com",
+  email: "",
   fridayClosed: false,
-  website: "https://jouryoptic.com/",
+  website: "https://anasseurukoo.github.io/joury-optic/",
 };
 
 export const supplier = {
@@ -20,7 +21,7 @@ export const supplier = {
 
 export const navigation = [
   { label: "Lunettes", href: "/collections/vue" },
-  { label: "Lentilles", href: "/collections" },
+  { label: "Lentilles", href: "/try-lens" },
   { label: "Nos services", href: "/services" },
   { label: "Essayage", href: "/essayage" },
   { label: "Try Lens", href: "/try-lens" },
