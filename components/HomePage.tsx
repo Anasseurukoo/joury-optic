@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  ArrowDown,
   ArrowRight,
   ArrowUpRight,
   CalendarDays,
   Camera,
   Eye,
+  Gem,
   Glasses,
+  Heart,
   MapPin,
   ScanFace,
   Sparkles,
@@ -26,7 +27,6 @@ import AppointmentForm from "./AppointmentForm";
 import SupplierSection from "./SupplierSection";
 import IndoTechnologiesSection from "./IndoTechnologiesSection";
 
-
 const services = [
   { icon: Eye, number: "01", title: "Examen visuel", text: "Un bilan précis et un accompagnement clair en boutique." },
   { icon: ScanFace, number: "02", title: "Conseil morphologique", text: "Une monture choisie selon le visage, le style et les usages." },
@@ -34,52 +34,166 @@ const services = [
   { icon: Wrench, number: "04", title: "Entretien & réparation", text: "Nettoyage, réglages et petites réparations pour prolonger la durée de vie." },
 ];
 
+const originalHeroStyles = `
+  .original-home-hero { position: relative; min-height: 100svh; }
+  .original-home-hero .hero-background {
+    background-image:
+      linear-gradient(90deg, rgba(0,0,0,.97) 0%, rgba(0,0,0,.90) 28%, rgba(0,0,0,.46) 58%, rgba(0,0,0,.10) 100%),
+      linear-gradient(0deg, rgba(0,0,0,.42), rgba(0,0,0,.04) 56%, rgba(0,0,0,.30) 100%),
+      url("/images/hero/joury-hero.png");
+    background-size: cover;
+    background-position: center center;
+  }
+  .original-home-hero .hero-content {
+    width: calc(100% - 160px);
+    max-width: none;
+    margin: 0 80px;
+    padding-top: 162px;
+    padding-bottom: 100px;
+    align-items: center;
+  }
+  .original-home-hero .hero-main { max-width: 860px; }
+  .original-home-hero .hero-kicker {
+    margin: 0 0 26px;
+    color: rgba(255,255,255,.86);
+    font-size: 14px;
+    line-height: 1.8;
+    font-weight: 550;
+    letter-spacing: .34em;
+    text-transform: uppercase;
+  }
+  .original-home-hero .hero-main h1 {
+    max-width: none;
+    margin: 0;
+    font: 400 clamp(72px, 6.6vw, 128px)/.83 var(--serif);
+    letter-spacing: -.04em;
+    text-transform: uppercase;
+  }
+  .original-home-hero .hero-main h1 em {
+    display: block;
+    font-style: normal;
+    color: #f4d58d;
+    text-shadow: 0 3px 22px rgba(0,0,0,.18);
+  }
+  .original-home-hero .hero-lead {
+    max-width: 720px;
+    margin: 34px 0 0;
+    color: rgba(255,255,255,.87);
+    font-size: clamp(18px, 1.5vw, 24px);
+    line-height: 1.55;
+  }
+  .original-home-hero .hero-buttons { gap: 16px; margin-top: 38px; }
+  .original-home-hero .original-primary,
+  .original-home-hero .original-secondary {
+    min-height: 64px;
+    border-radius: 0;
+    padding: 17px 30px;
+    font-size: 15px;
+    font-weight: 760;
+    letter-spacing: .01em;
+  }
+  .original-home-hero .original-primary {
+    background: linear-gradient(90deg, #f9e1a6, #efcf7f);
+    color: #090c0b;
+    box-shadow: 0 14px 35px rgba(0,0,0,.18);
+  }
+  .original-home-hero .original-primary:hover { background: linear-gradient(90deg, #ffe8b4, #f4d88e); }
+  .original-home-hero .original-secondary {
+    border-color: rgba(255,255,255,.82);
+    background: rgba(0,0,0,.12);
+    color: white;
+    backdrop-filter: blur(8px);
+  }
+  .original-home-hero .original-secondary:hover {
+    background: rgba(255,255,255,.10);
+    border-color: white;
+  }
+  .original-home-hero .hero-features {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 42px;
+    max-width: 840px;
+    border-top: 1px solid rgba(255,255,255,.14);
+    border-bottom: 1px solid rgba(255,255,255,.14);
+  }
+  .original-home-hero .hero-feature {
+    min-height: 112px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 18px;
+    color: rgba(255,255,255,.92);
+    text-align: center;
+  }
+  .original-home-hero .hero-feature + .hero-feature { border-left: 1px solid rgba(255,255,255,.18); }
+  .original-home-hero .hero-feature svg { color: #f0cc75; }
+  .original-home-hero .hero-feature span {
+    max-width: 150px;
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.35;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  @media (max-width: 1180px) {
+    .original-home-hero .hero-content { width: calc(100% - 100px); margin: 0 50px; }
+    .original-home-hero .hero-main h1 { font-size: clamp(64px, 8vw, 100px); }
+  }
+  @media (max-width: 900px) {
+    .original-home-hero .hero-content { width: calc(100% - 48px); margin: 0 24px; padding-top: 128px; padding-bottom: 64px; }
+    .original-home-hero .hero-main { max-width: 760px; }
+    .original-home-hero .hero-kicker { font-size: 11px; letter-spacing: .24em; }
+    .original-home-hero .hero-main h1 { font-size: clamp(58px, 12vw, 88px); }
+    .original-home-hero .hero-lead { margin-top: 24px; font-size: 17px; }
+    .original-home-hero .hero-buttons { display: grid; }
+    .original-home-hero .original-primary, .original-home-hero .original-secondary { width: 100%; }
+    .original-home-hero .hero-features { grid-template-columns: repeat(2, 1fr); }
+    .original-home-hero .hero-feature:nth-child(3) { border-left: 0; border-top: 1px solid rgba(255,255,255,.18); }
+    .original-home-hero .hero-feature:nth-child(4) { border-top: 1px solid rgba(255,255,255,.18); }
+  }
+  @media (max-width: 560px) {
+    .original-home-hero .hero-content { padding-top: 108px; }
+    .original-home-hero .hero-main h1 { font-size: clamp(47px, 14vw, 68px); line-height: .88; }
+    .original-home-hero .hero-lead { font-size: 15px; }
+    .original-home-hero .hero-feature { min-height: 96px; padding: 12px 8px; }
+    .original-home-hero .hero-feature span { font-size: 10px; }
+  }
+`;
+
 export default function HomePage() {
   return (
     <>
+      <style>{originalHeroStyles}</style>
       <Header overlay />
       <main id="main">
-        <section className="home-hero">
+        <section className="home-hero original-home-hero">
           <div className="hero-background" aria-hidden="true" />
           <div className="hero-noise" aria-hidden="true" />
           <div className="shell hero-content">
             <motion.div
               className="hero-main"
-              initial={{ opacity: 0, y: 34 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
             >
-              <p className="eyebrow light"><span /> Opticien · Casablanca</p>
-              <h1>Le bon cadre<br /><em>change tout.</em></h1>
-              <p className="hero-lead">Des montures choisies avec exigence, un conseil humain et un ajustement précis — pour que vos lunettes ressemblent vraiment à votre regard.</p>
+              <p className="hero-kicker">Regardez le monde<br />autrement</p>
+              <h1>Votre vision<br /><em>notre passion</em></h1>
+              <p className="hero-lead">Des lunettes, des lentilles et un accompagnement expert pour une vision plus claire et un style unique.</p>
+
               <div className="hero-buttons">
-                <Link href="/collections" className="button button-gold">Découvrir les collections <ArrowRight size={18} /></Link>
-                <Link href="/rendez-vous" className="button button-glass"><CalendarDays size={18} /> Préparer une visite</Link>
+                <Link href="/collections" className="button original-primary">Découvrir nos collections <ArrowRight size={21} /></Link>
+                <Link href="/rendez-vous" className="button original-secondary"><CalendarDays size={21} /> Prendre rendez-vous</Link>
               </div>
-              <div className="hero-exclusive-demo-row">
-                <Link href="/essayage#demo" className="hero-exclusive-demo" aria-label="Ouvrir la démo Try On Lunettes">
-                  <Camera size={17} aria-hidden="true" />
-                  <span>Try On Lunettes</span>
-                  <strong>Essai en direct</strong>
-                  <ArrowRight size={16} aria-hidden="true" />
-                </Link>
-                <Link href="/try-lens#demo" className="hero-exclusive-demo" aria-label="Ouvrir la démo Try Lens">
-                  <Camera size={17} aria-hidden="true" />
-                  <span>Try Lens</span>
-                  <strong>Essai en direct</strong>
-                  <ArrowRight size={16} aria-hidden="true" />
-                </Link>
+
+              <div className="hero-features" aria-label="Nos engagements">
+                <div className="hero-feature"><Gem size={31} strokeWidth={1.6} /><span>Expertise<br />professionnelle</span></div>
+                <div className="hero-feature"><Eye size={31} strokeWidth={1.6} /><span>Examen<br />de vue</span></div>
+                <div className="hero-feature"><Glasses size={31} strokeWidth={1.6} /><span>Marques<br />premium</span></div>
+                <div className="hero-feature"><Heart size={31} strokeWidth={1.6} /><span>Accompagnement<br />personnalisé</span></div>
               </div>
             </motion.div>
-          </div>
-
-          <div className="shell hero-bottom">
-            <a href="#selection" className="hero-scroll">Explorer <ArrowDown size={16} /></a>
-            <div className="hero-proof">
-              <span><Sparkles size={15} /> Sélection choisie</span>
-              <span><ScanFace size={15} /> Conseil personnalisé</span>
-              <span><Glasses size={15} /> Ajustement en boutique</span>
-            </div>
           </div>
         </section>
 
