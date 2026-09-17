@@ -7,12 +7,12 @@ export const dynamic = "force-static";
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     "", "/collections", "/collections/solaire", "/collections/vue", "/technologies-indo",
-    "/essayage", "/services", "/a-propos", "/contact", "/rendez-vous", "/confidentialite",
+    "/essayage", "/try-lens", "/services", "/a-propos", "/contact", "/rendez-vous", "/confidentialite",
   ];
   const pages: MetadataRoute.Sitemap = routes.map((path) => ({
     url: `${siteUrl}${path}${path ? "/" : "/"}`,
     changeFrequency: path === "" ? "weekly" : "monthly",
-    priority: path === "" ? 1 : path === "/collections" ? 0.9 : 0.7,
+    priority: path === "" ? 1 : path === "/collections" ? 0.9 : path === "/try-lens" ? 0.9 : 0.7,
   }));
   const productPages: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${siteUrl}/produits/${product.slug}/`,
