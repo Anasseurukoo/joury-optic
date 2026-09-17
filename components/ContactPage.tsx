@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Clock3 } from "lucide-react";
+import { MapPin, Phone, Clock3, MessageCircle } from "lucide-react";
 import Header from "./Header";
 import Footer from "./Footer";
 import PageHero from "./PageHero";
@@ -24,10 +24,10 @@ export default function ContactPage() {
               <div className="contact-list">
                 <div><MapPin size={21} /><p><span>Adresse</span><strong>{business.address}</strong></p></div>
                 <div><Phone size={21} /><p><span>Téléphone</span><a href={`tel:${business.phoneHref}`}>{business.phoneDisplay}</a></p></div>
-                <div><Mail size={21} /><p><span>E-mail</span><a href={`mailto:${business.email}`}>{business.email}</a></p></div>
-                <div><Clock3 size={21} /><p><span>Horaires</span><strong>Vendredi : fermé</strong><small>Contactez la boutique pour confirmer les horaires des autres jours.</small></p></div>
+                <div><MessageCircle size={21} /><p><span>WhatsApp</span><a href={business.whatsappUrl} target="_blank" rel="noreferrer">Ouvrir WhatsApp</a></p></div>
+                <div><Clock3 size={21} /><p><span>Horaires</span><strong>Ouvert toute la semaine</strong><small>Contactez la boutique pour confirmer l’heure souhaitée.</small></p></div>
               </div>
-              <a className="button button-gold" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address)}`} target="_blank" rel="noreferrer">Ouvrir l’itinéraire</a>
+              <a className="button button-gold" href={business.mapsUrl} target="_blank" rel="noreferrer">Ouvrir l’itinéraire</a>
             </div>
             <div className="contact-form-panel">
               <p className="eyebrow"><span /> Demande de rendez-vous</p>
